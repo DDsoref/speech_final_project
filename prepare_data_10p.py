@@ -316,9 +316,11 @@ def create_mixed_dataset(
         # Load clean audio
         clean_audio = load_audio(clean_path, config.TARGET_SR)
         
-        # Extract speaker_id from LibriSpeech path structure
+        # Extract speaker_id and utterance_id from LibriSpeech path structure
         # Path format: .../LibriSpeech/train-clean-100/SPEAKER_ID/CHAPTER_ID/filename.flac
-        speaker_id = Path(clean_path).parts[-3]
+        path_parts = Path(clean_path)
+        speaker_id = path_parts.parts[-3]
+        utterance_id = path_parts.stem  # Filename without extension
         
         # Save clean file
         clean_filename = f"clean_{idx:05d}.wav"
@@ -354,6 +356,7 @@ def create_mixed_dataset(
                     "noisy_file": noisy_filename,
                     "clean_file": clean_filename,
                     "speaker_id": speaker_id,
+                    "utterance_id": utterance_id,
                     "noise_type": noise_name,
                     "snr_db": float(snr_value),
                     "duration_sec": float(len(clean_audio) / config.TARGET_SR)
