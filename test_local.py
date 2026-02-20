@@ -38,39 +38,38 @@ def main():
             print("Exiting. Run data download first.")
             sys.exit(1)
     
-    # Step 2: Create tiny test config
-    print("\n▶ Creating test config (1% of 10% = 0.1% data)...")
+    # Step 2: Create tiny test data prep script
+    print("\n▶ Creating tiny test dataset script...")
     
-    test_config = """
-# Test version - uses 0.1% of data for quick CPU test
+    test_prep = """
+import os
+import sys
+sys.path.insert(0, os.getcwd())
 
-from src.utils.config import Config as OrigConfig
+# Modify prepare_data_10p.py to use even smaller amounts
+import prepare_data_10p as prep
 
-class TestConfig(OrigConfig):
-    # Tiny data amounts
-    SESSION0_TRAIN_UTTERANCES = 10       # Just 10 samples
-    SESSION0_VAL_UTTERANCES = 5
-    SESSION0_TEST_UTTERANCES = 3
-    
-    INCREMENTAL_TRAIN_UTTERANCES = 3
-    INCREMENTAL_VAL_UTTERANCES = 5
-    INCREMENTAL_TEST_UTTERANCES = 3
-    
-    # Fast training
-    pretrain_epochs = 1
-    incremental_epochs = 1
-    train_batch_size = 2
-    num_workers = 0  # Mac compatibility
+# Override config
+prep.Config.SESSION0_TRAIN_UTTERANCES = 10
+prep.Config.SESSION0_VAL_UTTERANCES = 5
+prep.Config.SESSION0_TEST_UTTERANCES = 3
+prep.Config.INCREMENTAL_TRAIN_UTTERANCES = 3
+prep.Config.INCREMENTAL_VAL_UTTERANCES = 5
+prep.Config.INCREMENTAL_TEST_UTTERANCES = 3
+
+# Run
+if __name__ == '__main__':
+    prep.main()
 """
     
-    with open('test_config.py', 'w') as f:
-        f.write(test_config)
+    with open('test_prepare.py', 'w') as f:
+        f.write(test_prep)
     
-    print("✓ Test config created")
+    print("✓ Test script created")
     
     # Step 3: Prepare tiny dataset
     print("\n▶ Preparing tiny test dataset (~1 min)...")
-    run_cmd("python -c \"exec(open('test_config.py').read()); from prepare_data_10p import *; config = TestConfig(); main()\"")
+    run_cmd("python test_prepare.py")
     
     # Step 4: Run training (1 epoch only)
     print("\n▶ Running 1 epoch training test (~3 min)...")
